@@ -157,7 +157,7 @@ export const withOAuth =
         },
       });
 
-      await saveSession(session, user);
+      await saveSession(session, user, false);
 
       logger.info('updated oauth account', {
         provider,
@@ -181,7 +181,7 @@ export const withOAuth =
         },
       });
 
-      await saveSession(session, <User>login.user!);
+      await saveSession(session, <User>login.user!, false);
 
       logger.info('logged in with oauth', {
         provider,
