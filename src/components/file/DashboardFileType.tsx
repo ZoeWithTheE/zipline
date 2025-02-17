@@ -194,7 +194,12 @@ export default function DashboardFileType({
             mah={400}
             src={dbFile ? `/raw/${file.name}${password ? `?pw=${password}` : ''}` : URL.createObjectURL(file)}
             alt={file.name}
-            style={{ maxWidth: '90vw', maxHeight: '90vh', cursor: allowZoom ? 'zoom-in' : 'default' }}
+            style={{
+              maxWidth: '90vw',
+              maxHeight: '90vh',
+              cursor: allowZoom ? 'zoom-in' : 'default',
+              width: 'auto',
+            }}
             onClick={() => setOpen(true)}
           />
           {allowZoom && open && (
@@ -209,6 +214,7 @@ export default function DashboardFileType({
                   maxHeight: '90vh',
                   objectFit: 'contain',
                   cursor: 'zoom-out',
+                  width: 'auto',
                 }}
               />
             </FileZoomModal>
