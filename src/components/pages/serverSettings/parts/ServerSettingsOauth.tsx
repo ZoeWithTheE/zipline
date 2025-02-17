@@ -102,6 +102,7 @@ export default function ServerSettingsOauth({
 
       <Text size='sm' c='dimmed'>
         For OAuth to work, the &quot;OAuth Registration&quot; setting must be enabled in the Features section.
+        If you have issues, try restarting Zipline after saving.
       </Text>
 
       <form onSubmit={form.onSubmit(onSubmit)}>
