@@ -25,13 +25,14 @@ async function handler({ code, host, state }: OAuthQuery, _logger: Logger): Prom
 
   if (!code) {
     const linkState = encrypt('link', config.core.secret);
+    const defaultState = encrypt('default', config.core.secret);
 
     return {
       redirect: oidcAuth.url(
         config.oauth.oidc.clientId!,
         `${config.core.returnHttpsUrls ? 'https' : 'http'}://${host}`,
         config.oauth.oidc.authorizeUrl!,
-        state === 'link' ? linkState : undefined,
+        state === 'link' ? linkState : defaultState,
         config.oauth.oidc.redirectUri ?? undefined,
       ),
     };
