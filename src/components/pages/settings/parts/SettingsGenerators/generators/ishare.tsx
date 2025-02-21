@@ -8,12 +8,11 @@ export function ishare(token: string, type: 'file' | 'url', options: GeneratorOp
   }
 
   const config = {
-    name: `Zipline - ${window.location.origin} - ${type === 'file' ? 'File' : 'URL'}`,
-    requestURL: `${window.location.origin}/api/upload`,
+    requesturl: `${window.location.origin}/api/upload`,
+    name: `Zipline - ${window.location.origin} - File`,
     headers: {},
-    fileFormName: 'file',
-    requestBodyType: 'multipartFormData',
-    responseURL: `{{files[0].url}}`,
+    fileformname: 'file',
+    responseurl: '{{files[0].url}}',
   };
 
   const toAddHeaders: UploadHeaders = {
@@ -43,12 +42,6 @@ export function ishare(token: string, type: 'file' | 'url', options: GeneratorOp
   } else {
     delete toAddHeaders['x-zipline-max-views'];
   }
-
-  // if (options.noJson === true) {
-  //   // unsupported in ishare
-  // } else {
-  //   delete toAddHeaders['x-zipline-no-json'];
-  // }
 
   if (options.addOriginalName === true && type === 'file') {
     toAddHeaders['x-zipline-original-name'] = 'true';
