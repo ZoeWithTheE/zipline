@@ -8,7 +8,7 @@ import enabled from '@/lib/oauth/enabled';
 import { googleAuth } from '@/lib/oauth/providerUtil';
 import { OAuthQuery, OAuthResponse, withOAuth } from '@/lib/oauth/withOAuth';
 
-async function handler({ code, host, state }: OAuthQuery, _logger: Logger): Promise<OAuthResponse> {
+async function handler({ code, host, state }: OAuthQuery, logger: Logger): Promise<OAuthResponse> {
   if (!config.features.oauthRegistration)
     return {
       error: 'OAuth registration is disabled.',
@@ -47,6 +47,8 @@ async function handler({ code, host, state }: OAuthQuery, _logger: Logger): Prom
     access_type: 'offline',
   });
 
+  logger.debug('google oauth request', { body: body.toString() });
+
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     body,
@@ -65,6 +67,8 @@ async function handler({ code, host, state }: OAuthQuery, _logger: Logger): Prom
 
   const userJson = await googleAuth.user(json.access_token);
   if (!userJson) return { error: 'Failed to fetch user' };
+
+  logger.debug('user', { userinfo: userJson });
 
   return {
     access_token: json.access_token,

@@ -72,6 +72,8 @@ async function handler({ code, host, state }: OAuthQuery, logger: Logger): Promi
   const userJson = await discordAuth.user(json.access_token);
   if (!userJson) return { error: 'Failed to fetch user' };
 
+  logger.debug('user', { '@me': userJson });
+
   const avatar = userJson.avatar
     ? `https://cdn.discordapp.com/avatars/${userJson.id}/${userJson.avatar}.png`
     : `https://cdn.discordapp.com/embed/avatars/${userJson.discriminator % 5}.png`;

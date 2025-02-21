@@ -42,7 +42,7 @@ async function handler({ code, state }: OAuthQuery, logger: Logger): Promise<OAu
   });
 
   logger.debug('github oauth request', {
-    body,
+    body: body.toString(),
   });
 
   const res = await fetch('https://github.com/login/oauth/access_token', {
@@ -54,7 +54,9 @@ async function handler({ code, state }: OAuthQuery, logger: Logger): Promise<OAu
     },
   });
 
-  if (!res.ok)
+  const isJson = res.headers.get('content-type')?.startsWith('application/json');
+
+  if (!isJson && !res.ok)
     return {
       error: 'Failed to fetch access token',
     };
@@ -74,6 +76,8 @@ async function handler({ code, state }: OAuthQuery, logger: Logger): Promise<OAu
 
   const userJson = await githubAuth.user(json.access_token);
   if (!userJson) return { error: 'Failed to fetch user' };
+
+  logger.debug('user', { user: userJson });
 
   return {
     access_token: json.access_token,
