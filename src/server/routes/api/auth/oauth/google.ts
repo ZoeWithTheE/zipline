@@ -2,13 +2,12 @@ import { fetchToDataURL } from '@/lib/base64';
 import { config } from '@/lib/config';
 import { encrypt } from '@/lib/crypto';
 import Logger from '@/lib/logger';
-import { combine } from '@/lib/middleware/combine';
-import { method } from '@/lib/middleware/method';
 import enabled from '@/lib/oauth/enabled';
 import { googleAuth } from '@/lib/oauth/providerUtil';
-import { OAuthQuery, OAuthResponse, withOAuth } from '@/lib/oauth/withOAuth';
+import { OAuthQuery, OAuthResponse } from '@/server/plugins/oauth';
+import fastifyPlugin from 'fastify-plugin';
 
-async function handler({ code, host, state }: OAuthQuery, logger: Logger): Promise<OAuthResponse> {
+async function googleOauth({ code, host, state }: OAuthQuery, logger: Logger): Promise<OAuthResponse> {
   if (!config.features.oauthRegistration)
     return {
       error: 'OAuth registration is disabled.',
@@ -79,4 +78,14 @@ async function handler({ code, host, state }: OAuthQuery, logger: Logger): Promi
   };
 }
 
-export default combine([method(['GET'])], withOAuth('GOOGLE', handler));
+export const PATH = '/api/auth/oauth/google';
+export default fastifyPlugin(
+  (server, _, done) => {
+    server.get(PATH, async (req, res) => {
+      return req.oauthHandle(res, 'GOOGLE', googleOauth);
+    });
+
+    done();
+  },
+  { name: PATH },
+);

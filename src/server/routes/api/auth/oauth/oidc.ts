@@ -2,14 +2,12 @@ import { fetchToDataURL } from '@/lib/base64';
 import { config } from '@/lib/config';
 import { encrypt } from '@/lib/crypto';
 import Logger from '@/lib/logger';
-import { combine } from '@/lib/middleware/combine';
-import { method } from '@/lib/middleware/method';
 import enabled from '@/lib/oauth/enabled';
 import { oidcAuth } from '@/lib/oauth/providerUtil';
-import { OAuthQuery, OAuthResponse, withOAuth } from '@/lib/oauth/withOAuth';
+import { OAuthQuery, OAuthResponse } from '@/server/plugins/oauth';
+import fastifyPlugin from 'fastify-plugin';
 
-// thanks to @danejur for this https://github.com/diced/zipline/pull/372
-async function handler({ code, host, state }: OAuthQuery, logger: Logger): Promise<OAuthResponse> {
+async function oidcOauth({ code, host, state }: OAuthQuery, logger: Logger): Promise<OAuthResponse> {
   if (!config.features.oauthRegistration)
     return {
       error: 'OAuth registration is disabled.',
@@ -85,4 +83,14 @@ async function handler({ code, host, state }: OAuthQuery, logger: Logger): Promi
   };
 }
 
-export default combine([method(['GET'])], withOAuth('OIDC', handler));
+export const PATH = '/api/auth/oauth/oidc';
+export default fastifyPlugin(
+  (server, _, done) => {
+    server.get(PATH, async (req, res) => {
+      return req.oauthHandle(res, 'OIDC', oidcOauth);
+    });
+
+    done();
+  },
+  { name: PATH },
+);
