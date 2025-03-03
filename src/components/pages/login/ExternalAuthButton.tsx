@@ -10,7 +10,7 @@ export default function ExternalAuthButton({
   leftSection: React.ReactNode;
 }) {
   return (
-    <Tooltip label={`Sign in with ${provider}`}>
+    <Tooltip label={`Continue with ${provider}`}>
       <ActionIcon
         component={Link}
         href={`/api/auth/oauth/${provider.toLowerCase()}`}
