@@ -41,10 +41,6 @@ export default function Export3Details({ export3 }: { export3: Export3 }) {
   const [envOpened, { toggle: toggleEnv }] = useDisclosure(false);
   const [osOpened, { toggle: toggleOs }] = useDisclosure(false);
 
-  const lastStat = export3.stats.sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  )[0];
-
   const envRows = Object.entries(export3.request.env).map(([key, value]) => (
     <Table.Tr key={key}>
       <Table.Td>{key}</Table.Td>
@@ -331,15 +327,6 @@ export default function Export3Details({ export3 }: { export3: Export3 }) {
                 2,
               )}
             />
-          </Accordion.Panel>
-        </Accordion.Item>
-
-        <Accordion.Item value='Stats'>
-          <Accordion.Control icon={<IconGraph size='1rem' />}>Stats</Accordion.Control>
-          <Accordion.Panel>
-            There was a total of {export3.stats.length} stats entries. The last one recorded at{' '}
-            {new Date(lastStat.created_at).toLocaleString()} with the following data:
-            <HighlightCode language='json' code={JSON.stringify(lastStat.data, null, 2)} />
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>

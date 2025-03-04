@@ -104,7 +104,7 @@ export default fastifyPlugin(
               provider: provider.provider as any,
               accessToken: provider.access_token!,
               refreshToken: provider.refresh_token ?? null,
-              oauthId: provider.oauth_id!,
+              oauthId: provider.oauth_id ?? null,
               username: provider.username!,
             });
           }
