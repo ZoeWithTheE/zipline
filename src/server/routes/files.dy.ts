@@ -1,3 +1,4 @@
+import { parseRange } from '@/lib/api/range';
 import { config } from '@/lib/config';
 import { verifyPassword } from '@/lib/crypto';
 import { datasource } from '@/lib/datasource';
@@ -94,24 +95,80 @@ export async function filesRoute(
     }
   }
 
-  await prisma.file.update({
-    where: {
-      id: file.id,
-    },
-    data: {
-      views: {
-        increment: 1,
+  if (!req.headers.range) {
+    await prisma.file.update({
+      where: {
+        id: file.id,
       },
-    },
-  });
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+    });
+  }
+
+  const size = file?.size || (await datasource.size(file?.name ?? id));
+
+  if (req.headers.range) {
+    const [start, end] = parseRange(req.headers.range, size);
+    if (start >= size || end >= size) {
+      const buf = await datasource.get(file?.name ?? id);
+      if (!buf) return req.server.nextServer.render404(req.raw, res.raw, parsedUrl);
+
+      return res
+        .type(file?.type || 'application/octet-stream')
+        .headers({
+          'Content-Length': size,
+          ...(file?.originalName
+            ? {
+                'Content-Disposition': `${download ? 'attachment; ' : ''}filename="${encodeURIComponent(file.originalName)}"`,
+              }
+            : download && {
+                'Content-Disposition': 'attachment;',
+              }),
+        })
+        .status(416)
+        .send(buf);
+    }
+
+    const buf = await datasource.range(file?.name ?? id, start || 0, end);
+    if (!buf) return req.server.nextServer.render404(req.raw, res.raw, parsedUrl);
+
+    return res
+      .type(file?.type || 'application/octet-stream')
+      .headers({
+        'Content-Range': `bytes ${start}-${end}/${size}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': end - start + 1,
+        ...(file?.originalName
+          ? {
+              'Content-Disposition': `${download ? 'attachment; ' : ''}filename="${encodeURIComponent(file.originalName)}"`,
+            }
+          : download && {
+              'Content-Disposition': 'attachment;',
+            }),
+      })
+      .status(206)
+      .send(buf);
+  }
+
+  const buf = await datasource.get(file?.name ?? id);
+  if (!buf) return req.server.nextServer.render404(req.raw, res.raw, parsedUrl);
 
   return res
+    .type(file?.type || 'application/octet-stream')
     .headers({
-      'Content-Type': file.type || 'application/octet-stream',
-      'Content-Length': file.size,
-      ...(file.originalName && {
-        'Content-Disposition': `${download ? 'attachment; ' : ''}filename="${encodeURIComponent(file.originalName)}"`,
-      }),
+      'Content-Length': size,
+      'Accept-Ranges': 'bytes',
+      ...(file?.originalName
+        ? {
+            'Content-Disposition': `${download ? 'attachment; ' : ''}filename="${encodeURIComponent(file.originalName)}"`,
+          }
+        : download && {
+            'Content-Disposition': 'attachment;',
+          }),
     })
-    .send(stream);
+    .status(200)
+    .send(buf);
 }
