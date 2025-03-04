@@ -103,6 +103,7 @@ export function uploadFiles(
     clearEphemeral,
     options,
     ephemeral,
+    folder,
   }: {
     setProgress: (o: { percent: number; remaining: number; speed: number }) => void;
     setLoading: (loading: boolean) => void;
@@ -111,6 +112,7 @@ export function uploadFiles(
     clearEphemeral: () => void;
     options: UploadOptionsStore['options'];
     ephemeral: UploadOptionsStore['ephemeral'];
+    folder?: string;
   },
 ) {
   setLoading(true);
@@ -193,7 +195,12 @@ export function uploadFiles(
 
   ephemeral.password && req.setRequestHeader('x-zipline-password', ephemeral.password);
   ephemeral.filename && req.setRequestHeader('x-zipline-filename', encodeURIComponent(ephemeral.filename));
-  ephemeral.folderId && req.setRequestHeader('x-zipline-folder', ephemeral.folderId);
+
+  if (folder) {
+    req.setRequestHeader('x-zipline-folder', folder);
+  } else if (ephemeral.folderId) {
+    req.setRequestHeader('x-zipline-folder', ephemeral.folderId);
+  }
 
   req.send(body);
 }

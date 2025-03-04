@@ -81,6 +81,7 @@ export async function uploadPartialFiles(
     options,
     ephemeral,
     config,
+    folder,
   }: {
     setProgress: (o: { percent: number; remaining: number; speed: number }) => void;
     setLoading: (loading: boolean) => void;
@@ -90,6 +91,7 @@ export async function uploadPartialFiles(
     options: UploadOptionsStore['options'];
     ephemeral: UploadOptionsStore['ephemeral'];
     config: ReturnType<typeof useConfig>;
+    folder?: string;
   },
 ) {
   setLoading(true);
@@ -249,7 +251,12 @@ export async function uploadPartialFiles(
       ephemeral.password && req.setRequestHeader('x-zipline-password', ephemeral.password);
       ephemeral.filename &&
         req.setRequestHeader('x-zipline-filename', encodeURIComponent(ephemeral.filename));
-      ephemeral.folderId && req.setRequestHeader('x-zipline-folder', ephemeral.folderId);
+
+      if (folder) {
+        req.setRequestHeader('x-zipline-folder', folder);
+      } else if (ephemeral.folderId) {
+        req.setRequestHeader('x-zipline-folder', ephemeral.folderId);
+      }
 
       req.setRequestHeader('x-zipline-p-identifier', identifier);
       req.setRequestHeader('x-zipline-p-filename', encodeURIComponent(file.name));

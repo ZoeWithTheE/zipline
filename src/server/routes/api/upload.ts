@@ -40,6 +40,16 @@ export default fastifyPlugin(
       const options = parseHeaders(req.headers, config.files);
       if (options.header) return res.badRequest('bad options, receieved: ' + JSON.stringify(options));
 
+      if (options.folder) {
+        const folder = await prisma.folder.findFirst({
+          where: {
+            id: options.folder,
+          },
+        });
+        if (!folder) return res.badRequest('folder not found');
+        if (!req.user && !folder.allowUploads) return res.forbidden('folder is not open');
+      }
+
       const filesIterable = req.files();
       const files: MultipartFileBuffer[] = [];
 
@@ -48,7 +58,7 @@ export default fastifyPlugin(
         files.push(<MultipartFileBuffer>file);
       }
 
-      if (req.user.quota) {
+      if (req.user?.quota) {
         const totalFileSize = options.partial
           ? options.partial.contentLength
           : files.reduce((acc, x) => acc + x.file.bytesRead, 0);

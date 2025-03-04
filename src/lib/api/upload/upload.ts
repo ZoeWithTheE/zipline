@@ -86,15 +86,17 @@ export async function handleFile({
     }
   }
 
+  let folder = null;
   if (options.folder) {
-    const exists = await prisma.folder.findFirst({
+    folder = await prisma.folder.findFirst({
       where: {
         id: options.folder,
-        userId: req.user.id,
       },
     });
 
-    if (!exists) throw 'Folder does not exist';
+    if (!folder) throw 'Folder does not exist';
+
+    if (!folder.allowUploads && folder.userId !== req.user?.id) throw 'Folder is not open';
   }
 
   let compressed = false;
@@ -123,7 +125,7 @@ export async function handleFile({
       type: compressed ? 'image/jpeg' : mimetype,
       User: {
         connect: {
-          id: req.user.id,
+          id: req.user ? req.user.id : options.folder ? folder?.userId : undefined,
         },
       },
       ...(options.maxViews && { maxViews: options.maxViews }),
@@ -150,10 +152,19 @@ export async function handleFile({
     ...(compressed && { compressed: true }),
   });
 
-  logger.info(`${req.user.username} uploaded ${fileUpload.name}`, { size: bytes(fileUpload.size) });
+  logger.info(`${req.user ? req.user.username : '[anonymous folder upload]'} uploaded ${fileUpload.name}`, {
+    size: bytes(fileUpload.size),
+    ip: req.ip,
+  });
 
   await onUpload({
-    user: req.user,
+    user: req.user ?? {
+      id: 'anonymous',
+      username: 'anonymous',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      role: 'USER',
+    },
     file: fileUpload,
     link: {
       raw: `${domain}/raw/${encodeURIComponent(fileUpload.name)}`,

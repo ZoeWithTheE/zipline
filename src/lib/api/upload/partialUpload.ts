@@ -57,15 +57,17 @@ export async function handlePartialUpload({
     if (mime) mimetype = mime;
   }
 
+  let folder = null;
   if (options.folder) {
-    const exists = await prisma.folder.findFirst({
+    folder = await prisma.folder.findFirst({
       where: {
         id: options.folder,
-        userId: req.user.id,
       },
     });
 
-    if (!exists) throw 'Folder does not exist';
+    if (!folder) throw 'Folder does not exist';
+
+    if (!folder.allowUploads && folder.userId !== req.user?.id) throw 'Folder is not open';
   }
 
   const tempFile = join(
@@ -82,7 +84,7 @@ export async function handlePartialUpload({
         type: mimetype,
         User: {
           connect: {
-            id: req.user.id,
+            id: req.user ? req.user.id : options.folder ? folder?.userId : undefined,
           },
         },
         ...(options.password && { password: await hashPassword(options.password) }),
@@ -98,7 +100,7 @@ export async function handlePartialUpload({
     new Worker('./build/offload/partial.js', {
       workerData: {
         user: {
-          id: req.user.id,
+          id: req.user ? req.user.id : options.folder ? folder?.userId : undefined,
         },
         file: {
           id: fileUpload.id,

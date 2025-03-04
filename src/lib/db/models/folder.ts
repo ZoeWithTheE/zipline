@@ -5,11 +5,13 @@ export type Folder = PrismaFolder & {
   files?: File[];
 };
 
-export function cleanFolder(folder: Folder, stringifyDates = false) {
+export function cleanFolder(folder: Partial<Folder>, stringifyDates = false) {
   if (folder.files) cleanFiles(folder.files, stringifyDates);
 
-  (folder as any).createdAt = stringifyDates ? folder.createdAt.toISOString() : folder.createdAt;
-  (folder as any).updatedAt = stringifyDates ? folder.updatedAt.toISOString() : folder.updatedAt;
+  if (folder.createdAt)
+    (folder as any).createdAt = stringifyDates ? folder.createdAt.toISOString() : folder.createdAt;
+  if (folder.updatedAt)
+    (folder as any).updatedAt = stringifyDates ? folder.updatedAt.toISOString() : folder.updatedAt;
 
   return folder;
 }

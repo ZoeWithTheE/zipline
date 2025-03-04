@@ -15,6 +15,7 @@ type Body = {
   id?: string;
   isPublic?: boolean;
   name?: string;
+  allowUploads?: boolean;
 
   delete?: 'file' | 'folder';
 };
@@ -100,7 +101,7 @@ export default fastifyPlugin(
 
           return res.send(cleanFolder(nFolder));
         } else if (req.method === 'PATCH') {
-          const { isPublic, name } = req.body;
+          const { isPublic, name, allowUploads } = req.body;
 
           const nFolder = await prisma.folder.update({
             where: {
@@ -109,6 +110,7 @@ export default fastifyPlugin(
             data: {
               ...(isPublic !== undefined && { public: isPublic }),
               ...(name && { name }),
+              ...(allowUploads !== undefined && { allowUploads }),
             },
             include: {
               files: {
@@ -123,6 +125,8 @@ export default fastifyPlugin(
           logger.info('folder updated', {
             folder: folder.id,
             isPublic,
+            name,
+            allowUploads,
           });
 
           return res.send(cleanFolder(nFolder));

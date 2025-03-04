@@ -36,7 +36,7 @@ import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { useShallow } from 'zustand/shallow';
 
-export default function UploadOptionsButton({ numFiles }: { numFiles: number }) {
+export default function UploadOptionsButton({ folder, numFiles }: { folder?: string; numFiles: number }) {
   const config = useConfig();
 
   const [opened, setOpen] = useState(false);
@@ -65,14 +65,14 @@ export default function UploadOptionsButton({ numFiles }: { numFiles: number }) 
   const combobox = useCombobox();
   const [folderSearch, setFolderSearch] = useState('');
 
-  useEffect(
-    () =>
-      useUploadOptionsStore.subscribe(
-        (state) => state.ephemeral,
-        (current) => (current.folderId === null ? setFolderSearch('') : null),
-      ),
-    [],
-  );
+  useEffect(() => {
+    if (folder) return;
+
+    useUploadOptionsStore.subscribe(
+      (state) => state.ephemeral,
+      (current) => (current.folderId === null ? setFolderSearch('') : null),
+    );
+  }, []);
 
   return (
     <>
@@ -236,6 +236,7 @@ export default function UploadOptionsButton({ numFiles }: { numFiles: number }) 
               setEphemeral('folderId', value === 'no folder' || value === '' ? null : value);
               combobox.closeDropdown();
             }}
+            disabled={!!folder}
           >
             <Combobox.Target>
               <InputBase

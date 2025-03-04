@@ -29,7 +29,7 @@ import { uploadPartialFiles } from '../uploadPartialFiles';
 import { humanizeDuration } from '@/lib/relativeTime';
 import { useShallow } from 'zustand/shallow';
 
-export default function UploadFile() {
+export default function UploadFile({ title, folder }: { title?: string; folder?: string }) {
   const theme = useMantineTheme();
   const colorScheme = useColorScheme();
   const clipboard = useClipboard();
@@ -85,6 +85,7 @@ export default function UploadFile() {
         options,
         ephemeral,
         config,
+        folder,
       });
     } else {
       const size = aggSize();
@@ -111,6 +112,7 @@ export default function UploadFile() {
         clearEphemeral,
         options,
         ephemeral,
+        folder,
       });
     }
   };
@@ -126,13 +128,15 @@ export default function UploadFile() {
   return (
     <>
       <Group gap='sm'>
-        <Title order={1}>Upload files</Title>
+        <Title order={1}>{title ?? 'Upload files'}</Title>
 
-        <Tooltip label='View your files'>
-          <ActionIcon component={Link} href='/dashboard/files' variant='outline' radius='sm'>
-            <IconFiles size={18} />
-          </ActionIcon>
-        </Tooltip>
+        {!folder && (
+          <Tooltip label='View your files'>
+            <ActionIcon component={Link} href='/dashboard/files' variant='outline' radius='sm'>
+              <IconFiles size={18} />
+            </ActionIcon>
+          </Tooltip>
+        )}
       </Group>
 
       <Dropzone
@@ -212,7 +216,7 @@ export default function UploadFile() {
       </Grid>
 
       <Group justify='right' gap='sm' my='md'>
-        <UploadOptionsButton numFiles={files.length} />
+        <UploadOptionsButton folder={folder} numFiles={files.length} />
 
         <Button
           variant='outline'
