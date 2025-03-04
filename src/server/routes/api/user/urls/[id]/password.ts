@@ -1,9 +1,7 @@
 import { verifyPassword } from '@/lib/crypto';
 import { prisma } from '@/lib/db';
 import { log } from '@/lib/logger';
-import { userMiddleware } from '@/server/middleware/user';
 import fastifyPlugin from 'fastify-plugin';
-
 export type ApiUserUrlsIdPasswordResponse = {
   success: boolean;
 };

@@ -3,9 +3,11 @@ import { prisma } from '@/lib/db';
 import { fileSelect } from '@/lib/db/models/file';
 import { Folder, cleanFolder } from '@/lib/db/models/folder';
 import { withSafeConfig } from '@/lib/middleware/next/withSafeConfig';
-import { Container, SimpleGrid, Title } from '@mantine/core';
+import { ActionIcon, Container, Group, SimpleGrid, Title } from '@mantine/core';
+import { IconUpload } from '@tabler/icons-react';
 import { InferGetServerSidePropsType } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 
 export default function ViewFolderId({
   folder,
@@ -19,7 +21,15 @@ export default function ViewFolderId({
         <title>{`${config.website.title ?? 'Zipline'} – ${folder.name}`}</title>
       </Head>
       <Container>
-        <Title order={1}>{folder.name}</Title>
+        <Group>
+          <Title order={1}>{folder.name}</Title>
+
+          <Link href={`/folder/${folder.id}/upload`}>
+            <ActionIcon variant='outline'>
+              <IconUpload size='1rem' />
+            </ActionIcon>
+          </Link>
+        </Group>
 
         <SimpleGrid
           my='sm'
@@ -38,7 +48,7 @@ export default function ViewFolderId({
 }
 
 export const getServerSideProps = withSafeConfig<{
-  folder?: Folder;
+  folder?: Partial<Folder>;
 }>(async (ctx) => {
   const { id } = ctx.query;
   if (!id) return { notFound: true };
@@ -53,6 +63,9 @@ export const getServerSideProps = withSafeConfig<{
           ...fileSelect,
           password: true,
           tags: false,
+        },
+        orderBy: {
+          createdAt: 'desc',
         },
       },
     },

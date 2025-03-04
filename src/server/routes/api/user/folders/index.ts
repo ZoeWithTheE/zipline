@@ -36,12 +36,18 @@ export default fastifyPlugin(
           where: {
             userId: req.user.id,
           },
+          orderBy: {
+            createdAt: 'desc',
+          },
           ...(!noincl && {
             include: {
               files: {
                 select: {
                   ...fileSelect,
                   password: true,
+                },
+                orderBy: {
+                  createdAt: 'desc',
                 },
               },
             },

@@ -1,6 +1,7 @@
 import DashboardFile from '@/components/file/DashboardFile';
 import { Folder } from '@/lib/db/models/folder';
-import { Group, Modal, SimpleGrid, Text } from '@mantine/core';
+import { Alert, Anchor, Button, CopyButton, Group, Modal, SimpleGrid, Text } from '@mantine/core';
+import { IconShare } from '@tabler/icons-react';
 
 export default function ViewFilesModal({
   folder,
@@ -20,6 +21,29 @@ export default function ViewFilesModal({
       opened={opened}
       onClose={onClose}
     >
+      {folder?.allowUploads && (
+        <Alert
+          icon={<IconShare size='1rem' />}
+          variant='outline'
+          mb='sm'
+          styles={{ message: { marginTop: 0 } }}
+        >
+          This folder allows anonymous uploads. Share the link below to allow others to let others upload
+          files to this folder.
+          <br />
+          <Anchor href={`/folder/${folder.id}/upload`} target='_blank'>
+            {`${window?.location?.origin ?? ''}/folder/${folder.id}/upload`}
+          </Anchor>
+          <CopyButton value={`${window?.location?.origin ?? ''}/folder/${folder.id}/upload`}>
+            {({ copied, copy }) => (
+              <Button mx='sm' size='compact-xs' color={copied ? 'teal' : 'blue'} onClick={copy}>
+                {copied ? 'Copied url' : 'Copy url'}
+              </Button>
+            )}
+          </CopyButton>
+        </Alert>
+      )}
+
       {folder?.files?.length === 0 ? null : (
         <SimpleGrid
           my='sm'

@@ -9,11 +9,13 @@ import {
   IconLock,
   IconLockOpen,
   IconPencil,
+  IconShare,
+  IconShareOff,
   IconTrashFilled,
 } from '@tabler/icons-react';
 import { useState } from 'react';
 import ViewFilesModal from './ViewFilesModal';
-import { copyFolderUrl, deleteFolder, editFolderVisibility } from './actions';
+import { copyFolderUrl, deleteFolder, editFolderUploads, editFolderVisibility } from './actions';
 import EditFolderNameModal from './EditFolderNameModal';
 
 export default function FolderCard({ folder }: { folder: Folder }) {
@@ -58,6 +60,12 @@ export default function FolderCard({ folder }: { folder: Folder }) {
                   onClick={() => editFolderVisibility(folder, !folder.public)}
                 >
                   {folder.public ? 'Make Private' : 'Make Public'}
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={folder.public ? <IconShareOff size='1rem' /> : <IconShare size='1rem' />}
+                  onClick={() => editFolderUploads(folder, !folder.allowUploads)}
+                >
+                  {folder.allowUploads ? 'Disallow anonymous uploads' : 'Allow anonymous uploads'}
                 </Menu.Item>
                 <Menu.Item leftSection={<IconPencil size='1rem' />} onClick={() => setEditOpen(true)}>
                   Edit Name

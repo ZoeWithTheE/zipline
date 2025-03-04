@@ -1,18 +1,20 @@
 import RelativeDate from '@/components/RelativeDate';
 import { Response } from '@/lib/api/response';
 import { Folder } from '@/lib/db/models/folder';
-import { ActionIcon, Anchor, Box, Group, Tooltip } from '@mantine/core';
+import { ActionIcon, Anchor, Box, Checkbox, Group, Tooltip } from '@mantine/core';
 import { useClipboard } from '@mantine/hooks';
 import { DataTable, DataTableSortStatus } from 'mantine-datatable';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
-import { copyFolderUrl, deleteFolder, editFolderVisibility } from '../actions';
+import { copyFolderUrl, deleteFolder, editFolderVisibility, editFolderUploads } from '../actions';
 import {
   IconCopy,
   IconFiles,
   IconLock,
   IconLockOpen,
   IconPencil,
+  IconShare,
+  IconShareOff,
   IconTrashFilled,
 } from '@tabler/icons-react';
 import ViewFilesModal from '../ViewFilesModal';
@@ -24,7 +26,7 @@ export default function FolderTableView() {
   const { data, isLoading } = useSWR<Extract<Response['/api/user/folders'], Folder[]>>('/api/user/folders');
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus>({
-    columnAccessor: 'updatedAt',
+    columnAccessor: 'createdAt',
     direction: 'desc',
   });
   const [sorted, setSorted] = useState<Folder[]>(data ?? []);
@@ -86,7 +88,13 @@ export default function FolderTableView() {
             {
               accessor: 'public',
               sortable: true,
-              render: (folder) => (folder.public ? 'Yes' : 'No'),
+              render: (folder) => <Checkbox checked={folder.public} />,
+            },
+            {
+              accessor: 'allowUploads',
+              title: 'Uploads?',
+              sortable: true,
+              render: (folder) => <Checkbox checked={folder.allowUploads} />,
             },
             {
               accessor: 'createdAt',
@@ -135,6 +143,19 @@ export default function FolderTableView() {
                       }}
                     >
                       {folder.public ? <IconLockOpen size='1rem' /> : <IconLock size='1rem' />}
+                    </ActionIcon>
+                  </Tooltip>
+                  <Tooltip
+                    label={folder.allowUploads ? 'Disable anonymous uploads' : 'Allow anonymous uploads'}
+                  >
+                    <ActionIcon
+                      color={folder.allowUploads ? 'blue' : 'gray'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        editFolderUploads(folder, !folder.allowUploads);
+                      }}
+                    >
+                      {folder.allowUploads ? <IconShareOff size='1rem' /> : <IconShare size='1rem' />}
                     </ActionIcon>
                   </Tooltip>
                   <Tooltip label='Edit Folder Name'>

@@ -67,6 +67,34 @@ export async function editFolderVisibility(folder: Folder, isPublic: boolean) {
   mutate('/api/user/folders');
 }
 
+export async function editFolderUploads(folder: Folder, allowUploads: boolean) {
+  const { data, error } = await fetchApi<Response['/api/user/folders/[id]']>(
+    `/api/user/folders/${folder.id}`,
+    'PATCH',
+    {
+      allowUploads,
+    },
+  );
+
+  if (error) {
+    notifications.show({
+      title: 'Failed to edit folder uploads policy',
+      message: error.error,
+      color: 'red',
+      icon: <IconFolderOff size='1rem' />,
+    });
+  } else {
+    notifications.show({
+      title: 'Folder uploads policy edited',
+      message: `${data?.name} will ${allowUploads ? 'now' : 'no longer'} allow anonymous uploads`,
+      color: 'green',
+      icon: <IconCheck size='1rem' />,
+    });
+  }
+
+  mutate('/api/user/folders');
+}
+
 async function handleDeleteFolder(folder: Folder) {
   const { data, error } = await fetchApi<Response['/api/user/folders/[id]']>(
     `/api/user/folders/${folder.id}`,
