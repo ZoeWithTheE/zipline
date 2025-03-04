@@ -21,7 +21,7 @@ const logger = log('api').c('user').c('urls').c('[id]').c('password');
 export const PATH = '/api/user/urls/:id/password';
 export default fastifyPlugin(
   (server, _, done) => {
-    server.post<{ Params: Params; Body: Body }>(PATH, { preHandler: [userMiddleware] }, async (req, res) => {
+    server.post<{ Params: Params; Body: Body }>(PATH, async (req, res) => {
       const url = await prisma.url.findFirst({
         where: {
           OR: [{ id: req.params.id }, { code: req.params.id }, { vanity: req.params.id }],
