@@ -39,7 +39,10 @@ export type WebhooksExecuteBody = {
 };
 
 export function hexString(value?: string | null): number | null {
-  return value ? (isNaN(parseInt(value, 16)) ? null : parseInt(value, 16)) : null;
+  if (!value) return null;
+
+  const parsed = parseInt(value.replace(/^#/, ''), 16);
+  return isNaN(parsed) ? null : parsed;
 }
 
 export function parseContent(
