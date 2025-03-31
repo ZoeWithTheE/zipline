@@ -81,6 +81,8 @@ export async function filesRoute(
 
   if (file.User?.view.enabled) return res.redirect(`/view/${encodeURIComponent(file.name)}`);
 
+  if (file.type.startsWith('text/')) return res.redirect(`/view/${encodeURIComponent(file.name)}`);
+
   const stream = await datasource.get(file.name);
   if (!stream) return req.server.nextServer.render404(req.raw, res.raw, parsedUrl);
   if (file.password) {
