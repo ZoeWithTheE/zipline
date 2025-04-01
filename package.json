@@ -102,6 +102,7 @@
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "prettier": "^3.5.2",
+    "sass": "^1.86.1",
     "tsc-alias": "^1.8.10",
     "tsup": "^8.3.6",
     "tsx": "^4.19.3",

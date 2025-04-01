@@ -15,7 +15,7 @@ import 'mantine-datatable/styles.css';
 
 import '@/styles/global.css';
 
-import '@/components/render/code/HighlightCode.theme.css';
+import '@/components/render/code/HighlightCode.theme.scss';
 
 const fetcher = async (url: RequestInfo | URL) => {
   const res = await fetch(url);
