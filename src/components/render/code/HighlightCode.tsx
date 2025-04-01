@@ -5,7 +5,7 @@ import hljs from 'highlight.js';
 export default function HighlightCode({ language, code }: { language: string; code: string }) {
   const theme = useMantineTheme();
 
-  const lines = code.split('\n').filter((line) => line !== '');
+  const lines = code.split('\n');
   const lineNumbers = lines.map((_, i) => i + 1);
 
   if (!hljs.getLanguage(language)) {
