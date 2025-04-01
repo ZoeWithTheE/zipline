@@ -14,6 +14,11 @@ import { ReadableStream } from 'stream/web';
 import { NodeHttpHandler } from '@smithy/node-http-handler';
 import { Agent as HttpAgent } from 'http';
 import { Agent as HttpsAgent } from 'https';
+
+function isOk(code: number) {
+  return code >= 200 && code < 300;
+}
+
 export class S3Datasource extends Datasource {
   name = 's3';
   client: S3Client;
@@ -59,7 +64,7 @@ export class S3Datasource extends Datasource {
   private async ensureBucketExists() {
     try {
       const res = await this.client.send(new ListBucketsCommand());
-      if (res.$metadata.httpStatusCode !== 200) {
+      if (!isOk(res.$metadata.httpStatusCode || 0)) {
         this.logger
           .error('there was an error while listing buckets', res.$metadata as Record<string, unknown>)
           .error('zipline will now exit');
@@ -89,7 +94,7 @@ export class S3Datasource extends Datasource {
     try {
       const res = await this.client.send(command);
 
-      if (res.$metadata.httpStatusCode !== 200) {
+      if (!isOk(res.$metadata.httpStatusCode || 0)) {
         this.logger.error(
           'there was an error while getting object',
           res.$metadata as Record<string, unknown>,
@@ -116,7 +121,7 @@ export class S3Datasource extends Datasource {
     try {
       const res = await this.client.send(command);
 
-      if (res.$metadata.httpStatusCode !== 200) {
+      if (!isOk(res.$metadata.httpStatusCode || 0)) {
         this.logger.error(
           'there was an error while putting object',
           res.$metadata as Record<string, unknown>,
@@ -136,7 +141,7 @@ export class S3Datasource extends Datasource {
     try {
       const res = await this.client.send(command);
 
-      if (res.$metadata.httpStatusCode !== 200) {
+      if (!isOk(res.$metadata.httpStatusCode || 0)) {
         this.logger.error('there was an error while deleting object');
         this.logger.error('error metadata', res.$metadata as Record<string, unknown>);
       }
@@ -155,7 +160,7 @@ export class S3Datasource extends Datasource {
     try {
       const res = await this.client.send(command);
 
-      if (res.$metadata.httpStatusCode !== 200) {
+      if (!isOk(res.$metadata.httpStatusCode || 0)) {
         this.logger.error('there was an error while getting object');
         this.logger.error('error metadata', res.$metadata as Record<string, unknown>);
 
@@ -179,7 +184,7 @@ export class S3Datasource extends Datasource {
     try {
       const res = await this.client.send(command);
 
-      if (res.$metadata.httpStatusCode !== 200) {
+      if (!isOk(res.$metadata.httpStatusCode || 0)) {
         this.logger.error('there was an error while listing objects');
         this.logger.error('error metadata', res.$metadata as Record<string, unknown>);
 
@@ -206,7 +211,7 @@ export class S3Datasource extends Datasource {
     try {
       const res = await this.client.send(command);
 
-      if (res.$metadata.httpStatusCode !== 200) {
+      if (!isOk(res.$metadata.httpStatusCode || 0)) {
         this.logger.error('there was an error while deleting objects');
         this.logger.error('error metadata', res.$metadata as Record<string, unknown>);
       }
