@@ -11,10 +11,11 @@ import { Response } from '@/lib/api/response';
 import { notifications } from '@mantine/notifications';
 import { Invite } from '@/lib/db/models/invite';
 import { mutate } from 'swr';
+import { parseAsBoolean, useQueryState } from 'nuqs';
 
 export default function DashboardInvites() {
   const view = useViewStore((state) => state.invites);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useQueryState('ciopen', parseAsBoolean.withDefault(false));
 
   const form = useForm<{
     maxUses: number | '';

@@ -11,11 +11,12 @@ import { useState } from 'react';
 import { mutate } from 'swr';
 import FolderGridView from './views/FolderGridView';
 import FolderTableView from './views/FolderTableView';
+import { parseAsBoolean, useQueryState } from 'nuqs';
 
 export default function DashboardFolders() {
   const view = useViewStore((state) => state.folders);
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useQueryState('cfopen', parseAsBoolean.withDefault(false));
 
   const form = useForm({
     initialValues: {

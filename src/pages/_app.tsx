@@ -1,4 +1,5 @@
 import { AppProps } from 'next/app';
+import { NuqsAdapter } from 'nuqs/adapters/next/pages';
 import Head from 'next/head';
 import { SWRConfig } from 'swr';
 import { ModalsProvider } from '@mantine/modals';
@@ -60,7 +61,9 @@ export default function App({
             }}
           >
             <Notifications zIndex={100000000} />
-            <Component {...pageProps} />
+            <NuqsAdapter>
+              <Component {...pageProps} />
+            </NuqsAdapter>
           </ModalsProvider>
         </Theming>
       </SWRConfig>

@@ -32,6 +32,7 @@ import {
 } from '@tabler/icons-react';
 import ms, { StringValue } from 'ms';
 import Link from 'next/link';
+import { parseAsBoolean, useQueryState } from 'nuqs';
 import { useEffect, useState } from 'react';
 import useSWR from 'swr';
 import { useShallow } from 'zustand/shallow';
@@ -39,7 +40,7 @@ import { useShallow } from 'zustand/shallow';
 export default function UploadOptionsButton({ folder, numFiles }: { folder?: string; numFiles: number }) {
   const config = useConfig();
 
-  const [opened, setOpen] = useState(false);
+  const [opened, setOpen] = useQueryState('upopen', parseAsBoolean.withDefault(false));
   const [options, ephemeral, setOption, setEphemeral, changes, clearEphemeral, clearOptions] =
     useUploadOptionsStore(
       useShallow((state) => [

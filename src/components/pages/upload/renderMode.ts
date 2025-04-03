@@ -1,12 +1,13 @@
 export enum RenderMode {
-  Katex,
-  Markdown,
-  Highlight,
+  Katex = 'katex',
+  Markdown = 'md',
+  Highlight = 'hl',
 }
 
 export function renderMode(extension: string) {
   switch (extension) {
     case 'tex':
+    case 'katex':
       return RenderMode.Katex;
     case 'md':
       return RenderMode.Markdown;

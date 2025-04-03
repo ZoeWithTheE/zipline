@@ -5,8 +5,8 @@ import { ActionIcon, Badge, Button, Card, Group, Modal, Paper, Stack, Text, Tool
 import { showNotification } from '@mantine/notifications';
 import { IncompleteFileStatus } from '@prisma/client';
 import { IconFileDots, IconTrashFilled } from '@tabler/icons-react';
-import { useRouter } from 'next/router';
-import { ReactNode, useEffect, useState } from 'react';
+import { parseAsBoolean, useQueryState } from 'nuqs';
+import { ReactNode } from 'react';
 import useSWR from 'swr';
 
 const badgeMap: Record<IncompleteFileStatus, ReactNode> = {
@@ -33,9 +33,7 @@ const badgeMap: Record<IncompleteFileStatus, ReactNode> = {
 };
 
 export default function PendingFilesButton() {
-  const router = useRouter();
-
-  const [open, setOpen] = useState(router.query.pending !== undefined);
+  const [open, setOpen] = useQueryState('popen', parseAsBoolean.withDefault(false));
 
   const { data: incompleteFiles, mutate } = useSWR<
     Extract<IncompleteFile[], Response['/api/user/files/incomplete']>
@@ -67,15 +65,6 @@ export default function PendingFilesButton() {
 
     mutate();
   };
-
-  useEffect(() => {
-    if (open) {
-      router.push({ query: { ...router.query, pending: 'true' } }, undefined, { shallow: true });
-    } else {
-      delete router.query.pending;
-      router.push({ query: router.query }, undefined, { shallow: true });
-    }
-  }, [open]);
 
   return (
     <>

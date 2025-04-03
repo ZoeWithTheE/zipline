@@ -28,7 +28,6 @@ import {
   useCombobox,
 } from '@mantine/core';
 import { useClipboard } from '@mantine/hooks';
-import type { Prisma } from '@prisma/client';
 import {
   IconCopy,
   IconExternalLink,
@@ -39,7 +38,7 @@ import {
 } from '@tabler/icons-react';
 import { DataTable } from 'mantine-datatable';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { parseAsBoolean, parseAsInteger, parseAsStringLiteral, useQueryState } from 'nuqs';
 import { useEffect, useReducer, useState } from 'react';
 import useSWR from 'swr';
 import { bulkDelete, bulkFavorite } from '../bulk';
@@ -179,7 +178,6 @@ function TagsFilter({
 }
 
 export default function FileTable({ id }: { id?: string }) {
-  const router = useRouter();
   const clipboard = useClipboard();
   const warnDeletion = useSettingsStore((state) => state.settings.warnDeletion);
 
@@ -187,13 +185,30 @@ export default function FileTable({ id }: { id?: string }) {
     '/api/user/folders?noincl=true',
   );
 
-  const [page, setPage] = useState<number>(router.query.page ? parseInt(router.query.page as string) : 1);
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [perpage, setPerpage] = useState<number>(20);
-  const [sort, setSort] = useState<keyof Prisma.FileOrderByWithAggregationInput>('createdAt');
-  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
+  const [sort, setSort] = useQueryState(
+    'sort',
+    parseAsStringLiteral([
+      'id',
+      'createdAt',
+      'updatedAt',
+      'deletesAt',
+      'name',
+      'originalName',
+      'size',
+      'type',
+      'views',
+      'favorite',
+    ]).withDefault('createdAt'),
+  );
+  const [order, setOrder] = useQueryState<'asc' | 'desc'>(
+    'order',
+    parseAsStringLiteral(['asc', 'desc']).withDefault('desc'),
+  );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const [idSearchOpen, setIdSearchOpen] = useState(false);
+  const [idSearchOpen, setIdSearchOpen] = useQueryState('idsearch', parseAsBoolean.withDefault(false));
   const [searchField, setSearchField] = useState<'name' | 'originalName' | 'type' | 'tags' | 'id'>('name');
   const [searchQuery, setSearchQuery] = useReducer(
     (state: ReducerQuery['state'], action: ReducerQuery['action']) => {
@@ -252,19 +267,6 @@ export default function FileTable({ id }: { id?: string }) {
       },
     }),
   });
-
-  useEffect(() => {
-    router.replace(
-      {
-        query: {
-          ...router.query,
-          page: page,
-        },
-      },
-      undefined,
-      { shallow: true },
-    );
-  }, [page]);
 
   useEffect(() => {
     if (data && selectedFile) {
@@ -546,7 +548,7 @@ export default function FileTable({ id }: { id?: string }) {
             direction: order,
           }}
           onSortStatusChange={(data) => {
-            setSort(data.columnAccessor as keyof Prisma.FileOrderByWithAggregationInput);
+            setSort(data.columnAccessor as any);
             setOrder(data.direction);
           }}
           onCellClick={({ record }) => setSelectedFile(record)}

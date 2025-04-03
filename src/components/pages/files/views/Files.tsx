@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useApiPagination } from '../useApiPagination';
+import { parseAsInteger, useQueryState } from 'nuqs';
 
 const DashboardFile = dynamic(() => import('@/components/file/DashboardFile'), {
   loading: () => <Skeleton height={350} animate />,
@@ -27,7 +28,7 @@ const PER_PAGE_OPTIONS = [9, 12, 15, 30, 45];
 export default function Files({ id }: { id?: string }) {
   const router = useRouter();
 
-  const [page, setPage] = useState<number>(router.query.page ? parseInt(router.query.page as string) : 1);
+  const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [perpage, setPerpage] = useState<number>(15);
   const [cachedPages, setCachedPages] = useState<number>(1);
 
@@ -42,19 +43,6 @@ export default function Files({ id }: { id?: string }) {
       setCachedPages(data.pages);
     }
   }, [data?.pages]);
-
-  useEffect(() => {
-    router.replace(
-      {
-        query: {
-          ...router.query,
-          page: page,
-        },
-      },
-      undefined,
-      { shallow: true },
-    );
-  }, [page]);
 
   const from = (page - 1) * perpage + 1;
   const to = Math.min(page * perpage, data?.total ?? 0);

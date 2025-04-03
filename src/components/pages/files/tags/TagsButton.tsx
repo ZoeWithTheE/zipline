@@ -1,22 +1,20 @@
+import { mutateFiles } from '@/components/file/actions';
 import { Response } from '@/lib/api/response';
 import { Tag } from '@/lib/db/models/tag';
-import { ActionIcon, Group, Modal, Paper, Stack, Text, Title, Tooltip } from '@mantine/core';
-import { IconPencil, IconPlus, IconTagOff, IconTags, IconTrashFilled } from '@tabler/icons-react';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
-import useSWR from 'swr';
-import TagPill from './TagPill';
 import { fetchApi } from '@/lib/fetchApi';
+import { ActionIcon, Group, Modal, Paper, Stack, Text, Title, Tooltip } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
+import { IconPencil, IconPlus, IconTagOff, IconTags, IconTrashFilled } from '@tabler/icons-react';
+import { parseAsBoolean, useQueryState } from 'nuqs';
+import { useState } from 'react';
+import useSWR from 'swr';
 import CreateTagModal from './CreateTagModal';
 import EditTagModal from './EditTagModal';
-import { mutateFiles } from '@/components/file/actions';
+import TagPill from './TagPill';
 
 export default function TagsButton() {
-  const router = useRouter();
-
-  const [open, setOpen] = useState(router.query.tags !== undefined);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [open, setOpen] = useQueryState('topen', parseAsBoolean.withDefault(false));
+  const [createModalOpen, setCreateModalOpen] = useQueryState('ctopen', parseAsBoolean.withDefault(false));
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
 
   const { data: tags, mutate } = useSWR<Extract<Tag[], Response['/api/user/tags']>>('/api/user/tags');
@@ -43,15 +41,6 @@ export default function TagsButton() {
     mutate();
     mutateFiles();
   };
-
-  useEffect(() => {
-    if (open) {
-      router.push({ query: { ...router.query, tags: 'true' } }, undefined, { shallow: true });
-    } else {
-      delete router.query.tags;
-      router.push({ query: router.query }, undefined, { shallow: true });
-    }
-  }, [open]);
 
   return (
     <>

@@ -26,7 +26,7 @@ export default function CreateTagModal({ open, onClose }: { open: boolean; onClo
     const color = values.color.trim() === '' ? colorHash(values.name) : values.color.trim();
 
     if (!color.startsWith('#')) {
-      form.setFieldError('color', 'Color must start with #');
+      return form.setFieldError('color', 'Color must start with #');
     }
 
     const { data, error } = await fetchApi<Extract<Response['/api/user/tags'], Tag>>(

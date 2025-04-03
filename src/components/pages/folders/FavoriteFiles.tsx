@@ -13,34 +13,16 @@ import {
 } from '@mantine/core';
 import { IconFileUpload, IconFilesOff } from '@tabler/icons-react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { parseAsInteger, useQueryState } from 'nuqs';
 import { useApiPagination } from '../files/useApiPagination';
 
 export default function FavoriteFiles() {
-  const router = useRouter();
-
-  const [page, setPage] = useState<number>(
-    router.query.favoritePage ? parseInt(router.query.favoritePage as string) : 1,
-  );
+  const [page, setPage] = useQueryState('fpage', parseAsInteger.withDefault(1));
   const { data, isLoading } = useApiPagination({
     page,
     favorite: true,
     filter: 'dashboard',
   });
-
-  useEffect(() => {
-    router.replace(
-      {
-        query: {
-          ...router.query,
-          favoritePage: page,
-        },
-      },
-      undefined,
-      { shallow: true },
-    );
-  }, [page]);
 
   if (!isLoading && data?.page.length === 0) return null;
 

@@ -7,7 +7,17 @@ type ApiPaginationOptions = {
   filter?: string;
   perpage?: number;
   favorite?: boolean;
-  sort?: keyof Prisma.FileOrderByWithAggregationInput;
+  sort?:
+    | 'name'
+    | 'id'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'deletesAt'
+    | 'originalName'
+    | 'size'
+    | 'type'
+    | 'views'
+    | 'favorite';
   order?: 'asc' | 'desc';
   id?: string;
   search?: {

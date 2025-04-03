@@ -22,7 +22,7 @@ import {
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { IconPhotoMinus, IconUserCancel, IconUserPlus } from '@tabler/icons-react';
-import { useState } from 'react';
+import { parseAsBoolean, useQueryState } from 'nuqs';
 import { mutate } from 'swr';
 import UserGridView from './views/UserGridView';
 import UserTableView from './views/UserTableView';
@@ -30,7 +30,7 @@ import UserTableView from './views/UserTableView';
 export default function DashboardUsers() {
   const currentUser = useUserStore((state) => state.user);
   const view = useViewStore((state) => state.users);
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useQueryState('cuseropen', parseAsBoolean.withDefault(false));
 
   const form = useForm<{
     username: string;
