@@ -138,6 +138,11 @@ export const getServerSideProps: GetServerSideProps<{
     props: {
       url,
       password,
+      config: {
+        website: {
+          theme: config.website.theme,
+        },
+      },
     },
   };
 };

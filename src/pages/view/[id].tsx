@@ -390,7 +390,21 @@ export const getServerSideProps: GetServerSideProps<{
     delete (file as any).password;
 
     return {
-      props: { file, pw: pw as string, user, code, host, themes, metrics, filesRoute: zConfig.files.route },
+      props: {
+        config: {
+          website: {
+            theme: zConfig.website.theme,
+          },
+        },
+        file,
+        pw: pw as string,
+        user,
+        code,
+        host,
+        themes,
+        metrics,
+        filesRoute: zConfig.files.route,
+      },
     };
   } else if (file.password && !pw) {
     delete (file as any).password;
@@ -408,6 +422,11 @@ export const getServerSideProps: GetServerSideProps<{
         host,
         themes,
         metrics,
+        config: {
+          website: {
+            theme: zConfig.website.theme,
+          },
+        },
       },
     };
   }
@@ -436,6 +455,11 @@ export const getServerSideProps: GetServerSideProps<{
       themes,
       metrics,
       filesRoute: zConfig.files.route,
+      config: {
+        website: {
+          theme: zConfig.website.theme,
+        },
+      },
     },
   };
 };
