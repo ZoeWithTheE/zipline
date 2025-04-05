@@ -5,7 +5,7 @@ import { useState } from 'react';
 import KaTeX from './KaTeX';
 import Markdown from './Markdown';
 import HighlightCode from './code/HighlightCode';
-import { parseAsStringEnum, parseAsStringLiteral, useQueryState } from 'nuqs';
+import { parseAsStringEnum, useQueryState } from 'nuqs';
 
 export function RenderAlert({
   renderer,

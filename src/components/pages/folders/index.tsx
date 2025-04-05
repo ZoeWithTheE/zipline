@@ -7,11 +7,10 @@ import { ActionIcon, Button, Group, Modal, Stack, Switch, TextInput, Title, Tool
 import { useForm } from '@mantine/form';
 import { notifications } from '@mantine/notifications';
 import { IconFolderPlus, IconPlus } from '@tabler/icons-react';
-import { useState } from 'react';
+import { parseAsBoolean, useQueryState } from 'nuqs';
 import { mutate } from 'swr';
 import FolderGridView from './views/FolderGridView';
 import FolderTableView from './views/FolderTableView';
-import { parseAsBoolean, useQueryState } from 'nuqs';
 
 export default function DashboardFolders() {
   const view = useViewStore((state) => state.folders);

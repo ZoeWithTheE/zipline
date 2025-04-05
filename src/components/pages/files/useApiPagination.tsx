@@ -1,5 +1,4 @@
 import { Response } from '@/lib/api/response';
-import type { Prisma } from '@prisma/client';
 import useSWR from 'swr';
 
 type ApiPaginationOptions = {

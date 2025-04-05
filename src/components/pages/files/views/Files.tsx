@@ -14,10 +14,9 @@ import {
 import { IconFileUpload, IconFilesOff } from '@tabler/icons-react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { parseAsInteger, useQueryState } from 'nuqs';
 import { useEffect, useState } from 'react';
 import { useApiPagination } from '../useApiPagination';
-import { parseAsInteger, useQueryState } from 'nuqs';
 
 const DashboardFile = dynamic(() => import('@/components/file/DashboardFile'), {
   loading: () => <Skeleton height={350} animate />,
@@ -26,8 +25,6 @@ const DashboardFile = dynamic(() => import('@/components/file/DashboardFile'), {
 const PER_PAGE_OPTIONS = [9, 12, 15, 30, 45];
 
 export default function Files({ id }: { id?: string }) {
-  const router = useRouter();
-
   const [page, setPage] = useQueryState('page', parseAsInteger.withDefault(1));
   const [perpage, setPerpage] = useState<number>(15);
   const [cachedPages, setCachedPages] = useState<number>(1);

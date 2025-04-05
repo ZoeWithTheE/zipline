@@ -2,7 +2,6 @@ import GridTableSwitcher from '@/components/GridTableSwitcher';
 import { useViewStore } from '@/lib/store/view';
 import { ActionIcon, Button, Group, Modal, NumberInput, Select, Stack, Title, Tooltip } from '@mantine/core';
 import { IconPlus, IconTagOff } from '@tabler/icons-react';
-import { useState } from 'react';
 import InviteGridView from './views/InviteGridView';
 import InviteTableView from './views/InviteTableView';
 import { useForm } from '@mantine/form';
