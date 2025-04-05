@@ -1,22 +1,20 @@
 import { bytes } from '@/lib/bytes';
 import { reloadSettings } from '@/lib/config';
-import { prisma } from '@/lib/db';
-import { fileSelect } from '@/lib/db/models/file';
-import { userSelect } from '@/lib/db/models/user';
-import { onUpload } from '@/lib/webhooks';
-import { log } from '@/lib/logger';
-import { UploadOptions } from '@/lib/uploader/parseHeaders';
-import { open, readFile, readdir, rm } from 'fs/promises';
-import { join } from 'path';
-import { isMainThread, workerData } from 'worker_threads';
-import { createReadStream } from 'fs';
-import {
-  CompleteMultipartUploadCommand,
-  CreateMultipartUploadCommand,
-  UploadPartCommand,
-} from '@aws-sdk/client-s3';
 import { getDatasource } from '@/lib/datasource';
 import { S3Datasource } from '@/lib/datasource/S3';
+import { prisma } from '@/lib/db';
+import { fileSelect } from '@/lib/db/models/file';
+import { IncompleteFile } from '@/lib/db/models/incompleteFile';
+import { userSelect } from '@/lib/db/models/user';
+import { log } from '@/lib/logger';
+import { randomCharacters } from '@/lib/random';
+import { UploadOptions } from '@/lib/uploader/parseHeaders';
+import { onUpload } from '@/lib/webhooks';
+import { Upload } from '@aws-sdk/lib-storage';
+import { createReadStream, createWriteStream } from 'fs';
+import { open, readdir, rm } from 'fs/promises';
+import { join } from 'path';
+import { isMainThread, workerData } from 'worker_threads';
 
 export type PartialWorkerData = {
   user: {
@@ -50,20 +48,20 @@ if (!options.partial.lastchunk) {
   process.exit(1);
 }
 
-worker();
+main();
 
-async function worker() {
+async function main() {
   await reloadSettings();
 
   const config = global.__config__;
   getDatasource(config);
 
-  const datasource = global.__datasource__;
-
   if (!config.chunks.enabled) {
     logger.error('chunks are not enabled');
     process.exit(1);
   }
+
+  const datasource = global.__datasource__;
 
   logger.debug('started partial upload worker');
 
@@ -71,10 +69,12 @@ async function worker() {
     files.filter((file) => file.startsWith(`zipline_partial_${options.partial!.identifier}`)),
   );
 
-  const readChunks = partials.map((file) => {
-    const [, , , start, end] = file.split('_');
-    return { file, start: Number(start), end: Number(end) };
-  });
+  const readChunks = partials
+    .map((file) => {
+      const [, , , start, end] = file.split('_');
+      return { file, start: Number(start), end: Number(end) };
+    })
+    .sort((a, b) => a.start - b.start);
 
   const incompleteFile = await prisma.incompleteFile.create({
     data: {
@@ -88,17 +88,32 @@ async function worker() {
     },
   });
 
-  if (config.datasource.type === 'local') {
-    const fd = await open(join(config.datasource.local!.directory, file.filename), 'w');
+  const finalPath =
+    config.datasource.type === 'local'
+      ? join(config.datasource.local!.directory, file.filename)
+      : join(config.core.tempDirectory, randomCharacters(16));
 
-    for (let i = 0; i !== readChunks.length; ++i) {
-      const chunk = readChunks[i];
+  const fd = await open(finalPath, 'w');
+  await fd.close();
 
-      const buffer = await readFile(join(config.core.tempDirectory, chunk.file));
+  for (let i = 0; i !== readChunks.length; ++i) {
+    const chunk = readChunks[i];
 
-      const { bytesWritten } = await fd.write(buffer, 0, buffer.length, chunk.start);
+    const chunkPath = join(config.core.tempDirectory, chunk.file);
 
-      await rm(join(config.core.tempDirectory, chunk.file));
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const readStream = createReadStream(chunkPath);
+        const writeStream = createWriteStream(finalPath, { start: chunk.start, flags: 'r+' });
+
+        readStream.pipe(writeStream);
+
+        writeStream.on('finish', resolve);
+
+        writeStream.on('error', reject);
+      });
+
+      await rm(chunkPath);
       await prisma.incompleteFile.update({
         where: {
           id: incompleteFile.id,
@@ -112,86 +127,47 @@ async function worker() {
       });
 
       logger.debug(`wrote chunk ${i + 1}/${readChunks.length}`, {
-        bytesWritten,
         start: chunk.start,
         end: chunk.end,
       });
-    }
+    } catch (e) {
+      logger.error('error while combining chunks');
+      console.error(e);
+      await failPartial(incompleteFile);
 
-    await fd.close();
-  } else if (config.datasource.type === 's3') {
+      process.exit(1);
+    }
+  }
+
+  if (config.datasource.type === 's3') {
+    logger.debug('starting multipart upload process for s3');
+
+    const bodyStream = createReadStream(finalPath);
     const s3datasource = datasource as S3Datasource;
-    const { UploadId } = await s3datasource.client.send(
-      new CreateMultipartUploadCommand({ Bucket: s3datasource.options.bucket, Key: file.filename }),
-    );
-
-    const partResults = [];
-
-    for (let i = 0; i !== readChunks.length; ++i) {
-      const chunk = readChunks[i];
-
-      const stream = createReadStream(join(config.core.tempDirectory, chunk.file));
-
-      try {
-        const res = await s3datasource.client.send(
-          new UploadPartCommand({
-            Bucket: s3datasource.options.bucket,
-            Key: file.filename,
-            UploadId,
-            PartNumber: i + 1,
-            Body: stream,
-            ContentLength: chunk.end - chunk.start,
-          }),
-        );
-
-        logger.debug(`uploaded chunk to s3 ${i + 1}/${readChunks.length}`, {
-          ETag: res.ETag,
-          start: chunk.start,
-          end: chunk.end,
-        });
-
-        partResults.push({
-          ETag: res.ETag,
-          PartNumber: i + 1,
-        });
-      } catch (e) {
-        logger.error('error while uploading chunk');
-        console.error(e);
-        return;
-      } finally {
-        await rm(join(config.core.tempDirectory, chunk.file));
-
-        await prisma.incompleteFile.update({
-          where: {
-            id: incompleteFile.id,
-          },
-          data: {
-            chunksComplete: {
-              increment: 1,
-            },
-            status: 'PROCESSING',
-          },
-        });
-      }
-    }
 
     try {
-      await s3datasource.client.send(
-        new CompleteMultipartUploadCommand({
+      const upload = new Upload({
+        client: s3datasource.client,
+        params: {
           Bucket: s3datasource.options.bucket,
           Key: file.filename,
-          UploadId,
-          MultipartUpload: {
-            Parts: partResults,
-          },
-        }),
-      );
+          Body: bodyStream,
+        },
+        partSize: bytes(config.chunks.size),
+        leavePartsOnError: false,
+      });
 
-      logger.debug('completed multipart upload for s3');
+      upload.on('httpUploadProgress', (progress) => logger.debug('s3 MultipartUpload', { ...progress }));
+
+      await upload.done();
+
+      await rm(finalPath);
     } catch (e) {
-      logger.error('error while completing multipart upload');
+      logger.error('error while uploading multipart file');
       console.error(e);
-      return;
+      await failPartial(incompleteFile);
+
+      process.exit(1);
     }
   }
 
@@ -236,6 +212,18 @@ async function runComplete(id: string) {
     link: {
       raw: `${domain}/raw/${fileUpload.name}`,
       returned: responseUrl,
+    },
+  });
+}
+
+function failPartial(incompleteFile: IncompleteFile) {
+  logger.error('failing incomplete file', { id: incompleteFile.id });
+  return prisma.incompleteFile.update({
+    where: {
+      id: incompleteFile.id,
+    },
+    data: {
+      status: 'FAILED',
     },
   });
 }
