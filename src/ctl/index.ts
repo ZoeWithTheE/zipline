@@ -39,6 +39,8 @@ cli
     '-i, --id [user_id]',
     'the id that imported files should belong to. if unspecificed the user with the "administrator" username as well as the "SUPERADMIN" role will be used',
   )
+  .option('--skip-db', 'do not add the files to the database')
+  .option('--skip-ds', 'do not add the files to the datasource')
   .option('-f, --folder [folder_id]', 'an optional folder to add the files to')
   .argument('<directory>', 'the directory to import into Zipline')
   .action(importDir);
