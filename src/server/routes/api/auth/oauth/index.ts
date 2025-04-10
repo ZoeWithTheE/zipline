@@ -12,7 +12,7 @@ type Body = {
 
 const logger = log('api').c('auth').c('oauth');
 
-export const PATH = '/api/auth/oauth/oidc';
+export const PATH = '/api/auth/oauth';
 export default fastifyPlugin(
   (server, _, done) => {
     server.get(PATH, { preHandler: [userMiddleware] }, async (req, res) => {
