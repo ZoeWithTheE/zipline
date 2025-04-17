@@ -24,11 +24,13 @@ export default function ViewFolderId({
         <Group>
           <Title order={1}>{folder.name}</Title>
 
-          <Link href={`/folder/${folder.id}/upload`}>
-            <ActionIcon variant='outline'>
-              <IconUpload size='1rem' />
-            </ActionIcon>
-          </Link>
+          {folder.allowUploads && (
+            <Link href={`/folder/${folder.id}/upload`}>
+              <ActionIcon variant='outline'>
+                <IconUpload size='1rem' />
+              </ActionIcon>
+            </Link>
+          )}
         </Group>
 
         <SimpleGrid
