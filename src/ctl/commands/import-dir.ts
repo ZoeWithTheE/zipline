@@ -86,7 +86,9 @@ export async function importDir(
     const start = process.hrtime();
 
     const buff = await readFile(join(fullPath, files[i]));
-    await datasource.put(data[i].name, buff);
+    await datasource.put(data[i].name, buff, {
+      mimetype: data[i].type ?? 'application/octet-stream',
+    });
 
     const diff = process.hrtime(start);
 

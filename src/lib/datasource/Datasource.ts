@@ -4,7 +4,7 @@ export abstract class Datasource {
   public name: string | undefined;
 
   public abstract get(file: string): null | Readable | Promise<Readable | null>;
-  public abstract put(file: string, data: Buffer): Promise<void>;
+  public abstract put(file: string, data: Buffer, options?: { mimetype?: string }): Promise<void>;
   public abstract delete(file: string): Promise<void>;
   public abstract size(file: string): Promise<number>;
   public abstract totalSize(): Promise<number>;

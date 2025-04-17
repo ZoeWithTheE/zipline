@@ -111,11 +111,18 @@ export class S3Datasource extends Datasource {
     }
   }
 
-  public async put(file: string, data: Buffer): Promise<void> {
+  public async put(
+    file: string,
+    data: Buffer,
+    options: {
+      mimetype?: string;
+    } = {},
+  ): Promise<void> {
     const command = new PutObjectCommand({
       Bucket: this.options.bucket,
       Key: file,
       Body: data,
+      ...(options.mimetype ? { ContentType: options.mimetype } : {}),
     });
 
     try {

@@ -96,7 +96,9 @@ async function generate(config: Config, datasource: Datasource, ids: string[]) {
       await datasource.delete(`.thumbnail.${file.id}.jpg`);
     }
 
-    await datasource.put(`.thumbnail.${file.id}.jpg`, thumbnail);
+    await datasource.put(`.thumbnail.${file.id}.jpg`, thumbnail, {
+      mimetype: 'image/jpeg',
+    });
 
     const existingThumbnail = await prisma.thumbnail.findFirst({
       where: {

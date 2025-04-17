@@ -137,7 +137,9 @@ export async function handleFile({
     select: fileSelect,
   });
 
-  await datasource.put(fileUpload.name, file.buffer);
+  await datasource.put(fileUpload.name, file.buffer, {
+    mimetype: fileUpload.type,
+  });
 
   const responseUrl = `${domain}${
     config.files.route === '/' || config.files.route === '' ? '' : `${config.files.route}`
