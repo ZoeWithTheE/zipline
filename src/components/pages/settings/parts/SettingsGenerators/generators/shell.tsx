@@ -10,7 +10,7 @@ export function shell(token: string, type: 'file' | 'url', options: GeneratorOpt
   ];
 
   if (type === 'file') {
-    curl.push('-F', 'file=@$1');
+    curl.push('-F', '"file=@$1;type=$(file --mime-type -b "$1")"');
     curl.push('-H', "'content-type: multipart/form-data'");
   } else {
     curl.push('-H', "'content-type: application/json'");
@@ -61,20 +61,22 @@ export function shell(token: string, type: 'file' | 'url', options: GeneratorOpt
   }
 
   for (const [key, value] of Object.entries(toAddHeaders)) {
-    curl.push('-H', `${key}: ${value}`);
+    curl.push('-H', `"${key}: ${value}"`);
   }
 
   let script;
 
   if (type === 'file') {
     script = `#!/bin/bash
-${curl.join(' ')}${options.noJson ? '' : ' | jq -r .files[0].url'} | tr -d '\\n' | ${copier(options)}
+${curl.join(' ')}${options.noJson ? '' : ' | jq -r .files[0].url'}${
+      options.unix_useEcho ? '' : ` | ${copier(options)}`
+    }
 `;
   } else {
     script = `#!/bin/bash
-${curl.join(' ')} -d "{\\"url\\": \\"$1\\"}"${
-      options.noJson ? '' : ' | jq -r .files[0].url'
-    } | tr -d '\\n' | ${copier(options)}
+${curl.join(' ')} -d "{\\"destination\\": \\"$1\\"}"${
+      options.noJson ? '' : ' | jq -r .url'
+    }${options.unix_useEcho ? '' : ` | ${copier(options)}`}
 `;
   }
 
