@@ -101,7 +101,6 @@ export async function uploadPartialFiles(
 
   for (let i = 0; i !== files.length; ++i) {
     const file = files[i];
-    const identifier = randomCharacters(8);
     const nChunks = Math.ceil(file.size / chunkSize);
     const chunks: {
       blob: Blob;
@@ -129,6 +128,7 @@ export async function uploadPartialFiles(
 
     let ready = true;
     let totalLoaded = 0;
+    let identifier: string | undefined;
     const start = Date.now();
 
     for (let j = 0; j !== nChunks; ++j) {
@@ -172,7 +172,7 @@ export async function uploadPartialFiles(
               message: (res as ErrorBody).error,
               color: 'red',
               icon: <IconFileXFilled size='1rem' />,
-              autoClose: true,
+              autoClose: false,
               loading: false,
             });
             ready = false;
@@ -189,6 +189,10 @@ export async function uploadPartialFiles(
             loading: false,
             autoClose: false,
           });
+
+          if (j === 0) {
+            identifier = res.partialIdentifier;
+          }
 
           if (j === chunks.length - 1) {
             notifications.update({
@@ -258,7 +262,7 @@ export async function uploadPartialFiles(
         req.setRequestHeader('x-zipline-folder', ephemeral.folderId);
       }
 
-      req.setRequestHeader('x-zipline-p-identifier', identifier);
+      identifier && req.setRequestHeader('x-zipline-p-identifier', identifier);
       req.setRequestHeader('x-zipline-p-filename', encodeURIComponent(file.name));
       req.setRequestHeader('x-zipline-p-lastchunk', j === chunks.length - 1 ? 'true' : 'false');
       req.setRequestHeader('x-zipline-p-content-type', file.type);

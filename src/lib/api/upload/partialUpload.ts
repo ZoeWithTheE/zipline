@@ -7,10 +7,14 @@ import { formatFileName } from '@/lib/uploader/formatFileName';
 import { UploadHeaders, UploadOptions } from '@/lib/uploader/parseHeaders';
 import { ApiUploadResponse, MultipartFileBuffer } from '@/server/routes/api/upload';
 import { FastifyRequest } from 'fastify';
-import { writeFile } from 'fs/promises';
+import { readdir, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { Worker } from 'worker_threads';
 import { getExtension } from './upload';
+import { randomCharacters } from '@/lib/random';
+import { bytes } from '@/lib/bytes';
+
+const partialsCache = new Map<string, { length: number; options: UploadOptions }>();
 
 const logger = log('api').c('upload');
 export async function handlePartialUpload({
@@ -29,8 +33,34 @@ export async function handlePartialUpload({
   if (!options.partial) throw 'No partial upload options provided';
   logger.debug('partial upload detected', { partial: options.partial });
 
-  if (!options.partial.identifier || !options.partial.range || options.partial.range.length !== 3)
-    throw 'Invalid partial upload';
+  if (!options.partial.range || options.partial.range.length !== 3) throw 'Invalid partial upload';
+
+  if (options.partial.range[0] === 0) {
+    const identifier = randomCharacters(8);
+    partialsCache.set(identifier, { length: file.buffer.length, options });
+    options.partial.identifier = identifier;
+  } else {
+    if (!options.partial.identifier || !partialsCache.has(options.partial.identifier))
+      throw 'No partial upload identifier provided';
+  }
+
+  const cache = partialsCache.get(options.partial.identifier);
+  if (!cache) throw 'No partial upload cache found';
+
+  const prefix = `zipline_partial_${options.partial.identifier}_`;
+
+  if (cache.length + file.buffer.length > bytes(config.files.maxFileSize)) {
+    partialsCache.delete(options.partial.identifier);
+
+    const tempFiles = await readdir(config.core.tempDirectory);
+    await Promise.all(
+      tempFiles.filter((f) => f.startsWith(prefix)).map((f) => rm(join(config.core.tempDirectory, f))),
+    );
+
+    throw 'File is too large';
+  }
+
+  cache.length += file.buffer.length;
 
   const extension = getExtension(options.partial.filename, options.overrides?.extension);
 
@@ -72,7 +102,7 @@ export async function handlePartialUpload({
 
   const tempFile = join(
     config.core.tempDirectory,
-    `zipline_partial_${options.partial.identifier}_${options.partial.range[0]}_${options.partial.range[1]}`,
+    `${prefix}${options.partial.range[0]}_${options.partial.range[1]}`,
   );
   await writeFile(tempFile, file.buffer);
 
@@ -119,7 +149,12 @@ export async function handlePartialUpload({
       url: `${domain}/${encodeURIComponent(fileUpload.name)}`,
       pending: true,
     });
+
+    partialsCache.delete(options.partial.identifier);
   }
 
   response.partialSuccess = true;
+  if (options.partial.range[0] === 0) {
+    response.partialIdentifier = options.partial.identifier;
+  }
 }

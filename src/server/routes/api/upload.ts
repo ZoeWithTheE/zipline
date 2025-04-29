@@ -23,6 +23,7 @@ export type ApiUploadResponse = {
   assumedMimetypes?: boolean[];
 
   partialSuccess?: boolean;
+  partialIdentifier?: string;
 };
 
 const logger = log('api').c('upload');
