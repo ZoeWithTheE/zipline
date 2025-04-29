@@ -305,7 +305,8 @@ export default function FileModal({
                       onClick={() => removeFromFolder(file)}
                       fullWidth
                     >
-                      Remove from folder &quot;{folders?.find((f) => f.id === file.folderId)?.name ?? ''}
+                      Remove from folder &quot;
+                      {folders?.find((f: { id: string }) => f.id === file.folderId)?.name ?? ''}
                       &quot;
                     </Button>
                   ) : (
