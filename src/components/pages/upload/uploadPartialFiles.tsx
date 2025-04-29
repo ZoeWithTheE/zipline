@@ -1,7 +1,6 @@
 import { useConfig } from '@/components/ConfigProvider';
 import { Response } from '@/lib/api/response';
 import { bytes } from '@/lib/bytes';
-import { randomCharacters } from '@/lib/random';
 import { ErrorBody } from '@/lib/response';
 import { UploadOptionsStore } from '@/lib/store/uploadOptions';
 import { ActionIcon, Anchor, Group, Stack, Table, Text, Tooltip } from '@mantine/core';
