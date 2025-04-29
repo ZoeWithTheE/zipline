@@ -338,18 +338,21 @@ export default function FileModal({
                       <Combobox.Dropdown>
                         <Combobox.Options>
                           {folders
-                            ?.filter((f) => f.name.toLowerCase().includes(search.toLowerCase().trim()))
-                            .map((f) => (
+                            ?.filter((f: { name: string }) =>
+                              f.name.toLowerCase().includes(search.toLowerCase().trim()),
+                            )
+                            .map((f: { name: string; id: string }) => (
                               <Combobox.Option value={f.id} key={f.id}>
                                 {f.name}
                               </Combobox.Option>
                             ))}
 
-                          {!folders?.some((f) => f.name === search) && search.trim().length > 0 && (
-                            <Combobox.Option value='$create'>
-                              + Create folder &quot;{search}&quot;
-                            </Combobox.Option>
-                          )}
+                          {!folders?.some((f: { name: string }) => f.name === search) &&
+                            search.trim().length > 0 && (
+                              <Combobox.Option value='$create'>
+                                + Create folder &quot;{search}&quot;
+                              </Combobox.Option>
+                            )}
                         </Combobox.Options>
                       </Combobox.Dropdown>
                     </Combobox>
