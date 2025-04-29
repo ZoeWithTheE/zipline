@@ -137,7 +137,8 @@ export default function Login({ config }: InferGetServerSidePropsType<typeof get
       } else {
         mutate(data as Response['/api/user']);
       }
-    } catch {
+    } catch (e) {
+      console.log(e);
       setPasskeyErrored(true);
       setPasskeyLoading(false);
     }
