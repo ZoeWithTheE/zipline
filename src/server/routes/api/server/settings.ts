@@ -12,6 +12,7 @@ import ms, { StringValue } from 'ms';
 import { cpus } from 'os';
 import { resolve } from 'path';
 import { z } from 'zod';
+import files from '../user/files';
 
 type Settings = Awaited<ReturnType<typeof readDatabaseSettings>>;
 
@@ -136,6 +137,7 @@ export default fastifyPlugin(
             filesRemoveGpsMetadata: z.boolean(),
             filesRandomWordsNumAdjectives: z.number().min(1).max(20),
             filesRandomWordsSeparator: z.string(),
+            filesFileOverwrite: z.boolean(),
 
             urlsRoute: z
               .string()
