@@ -79,8 +79,15 @@ export async function handlePartialUpload({
       },
     });
 
+    const fileOverwrite = req.headers['x-zipline-file-overwrite'] === 'true'; // Check header value
+
+    if (fileOverwrite && !config.files.fileOverwrite) {
+      throw 'File overwrite is disabled in the configuration';
+    }
+
     if (existing) {
-      if (config.files.fileOverwrite) {
+      if (fileOverwrite && config.files.fileOverwrite) { // Both must be true
+        // Delete the existing file
         await prisma.file.delete({
           where: {
             id: existing.id,

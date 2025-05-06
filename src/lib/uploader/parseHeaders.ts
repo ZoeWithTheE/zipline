@@ -53,6 +53,7 @@ export type UploadHeaders = {
   'x-zipline-filename'?: string;
   'x-zipline-domain'?: string;
   'x-zipline-file-extension'?: string;
+  'x-zipline-file-overwrite'?: StringBoolean;
 
   'content-range'?: string;
   'x-zipline-p-filename'?: string;
@@ -212,6 +213,13 @@ export function parseHeaders(headers: UploadHeaders, fileConfig: Config['files']
     const domainArray = returnDomain.split(',');
     response.overrides.returnDomain = domainArray[Math.floor(Math.random() * domainArray.length)].trim();
   }
+
+  const fileOverwrite = headers['x-zipline-file-overwrite'];
+  if (fileOverwrite) {
+    if (fileOverwrite !== 'true' && fileOverwrite !== 'false')
+      return headerError('x-zipline-file-overwrite', 'Invalid file overwrite (must be true or false)');
+  }
+
 
   if (headers['content-range']) {
     const [start, end, total] = headers['content-range']
