@@ -43,6 +43,7 @@ COPY --from=builder /zipline/.next ./.next
 COPY --from=builder /zipline/mimes.json ./mimes.json
 COPY --from=builder /zipline/code.json ./code.json
 
+RUN pnpm add -g prisma
 RUN pnpm build:prisma
 
 # clean
