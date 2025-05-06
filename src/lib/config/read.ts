@@ -312,6 +312,8 @@ export async function readDatabaseSettings() {
     });
   }
 
+  console.log(ziplineTable);
+
   return ziplineTable;
 }
 
