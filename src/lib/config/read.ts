@@ -42,6 +42,7 @@ export const rawConfig: any = {
     removeGpsMetadata: undefined,
     randomWordsNumAdjectives: undefined,
     randomWordsSeperator: undefined,
+    fileOverwrite: undefined,
   },
   urls: {
     route: undefined,

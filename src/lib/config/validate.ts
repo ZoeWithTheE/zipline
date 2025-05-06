@@ -96,6 +96,7 @@ export const schema = z.object({
     removeGpsMetadata: z.boolean().default(false),
     randomWordsNumAdjectives: z.number().default(3),
     randomWordsSeperator: z.string().default('-'),
+    fileOverwrite: z.boolean().default(false),
   }),
   urls: z.object({
     route: z.string().startsWith('/').min(1).trim().toLowerCase().default('/go'),

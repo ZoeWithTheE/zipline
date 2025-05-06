@@ -72,7 +72,19 @@ export async function handleFile({
         },
       },
     });
-    if (existing) throw `A file with the name "${fileName}*" already exists`;
+
+    if (existing) {
+      if (config.files.fileOverwrite) {
+        await prisma.file.delete({
+          where: {
+            id: existing.id,
+          },
+        });
+        logger.info(`Overwriting existing file: ${fileName}`);
+      } else {
+        throw `A file with the name "${fileName}*" already exists`;
+      }
+    }
   }
 
   let mimetype = file.mimetype;
