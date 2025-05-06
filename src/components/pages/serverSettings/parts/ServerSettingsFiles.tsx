@@ -15,6 +15,7 @@ import { IconDeviceFloppy } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { settingsOnSubmit } from '../settingsOnSubmit';
+import files from '@/server/routes/api/user/files';
 
 export default function ServerSettingsFiles({
   swr: { data, isLoading },
@@ -34,6 +35,7 @@ export default function ServerSettingsFiles({
     filesRemoveGpsMetadata: boolean;
     filesRandomWordsNumAdjectives: number;
     filesRandomWordsSeparator: string;
+    filesFileOverwrite: boolean;
   }>({
     initialValues: {
       filesRoute: '/u',
@@ -47,6 +49,7 @@ export default function ServerSettingsFiles({
       filesRemoveGpsMetadata: false,
       filesRandomWordsNumAdjectives: 3,
       filesRandomWordsSeparator: '-',
+      filesFileOverwrite: false,
     },
   });
 
@@ -92,6 +95,7 @@ export default function ServerSettingsFiles({
       filesRemoveGpsMetadata: data?.filesRemoveGpsMetadata ?? false,
       filesRandomWordsNumAdjectives: data?.filesRandomWordsNumAdjectives ?? 3,
       filesRandomWordsSeparator: data?.filesRandomWordsSeparator ?? '-',
+      filesFileOverwrite: data?.filesFileOverwrite ?? false,
     });
   }, [data]);
 
@@ -179,6 +183,12 @@ export default function ServerSettingsFiles({
             description='The separator to use for the random-words/gfycat format.'
             placeholder='-'
             {...form.getInputProps('filesRandomWordsSeparator')}
+          />
+
+          <Switch
+            label='File Overwrite'
+            description='Allow overwriting files with the same name.'
+            {...form.getInputProps('filesFileOverwrite', { type: 'checkbox' })}
           />
         </SimpleGrid>
 
