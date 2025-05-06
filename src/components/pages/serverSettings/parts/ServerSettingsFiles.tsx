@@ -123,6 +123,12 @@ export default function ServerSettingsFiles({
           />
 
           <Switch
+            label='File Overwrite'
+            description='Allow overwriting files with the same name.'
+            {...form.getInputProps('filesFileOverwrite', { type: 'checkbox' })}
+          />
+
+          <Switch
             label='Assume Mimetypes'
             description='Assume the mimetype of a file for its extension.'
             {...form.getInputProps('filesAssumeMimetypes', { type: 'checkbox' })}
@@ -183,12 +189,6 @@ export default function ServerSettingsFiles({
             description='The separator to use for the random-words/gfycat format.'
             placeholder='-'
             {...form.getInputProps('filesRandomWordsSeparator')}
-          />
-
-          <Switch
-            label='File Overwrite'
-            description='Allow overwriting files with the same name.'
-            {...form.getInputProps('filesFileOverwrite', { type: 'checkbox' })}
           />
         </SimpleGrid>
 

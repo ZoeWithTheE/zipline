@@ -36,6 +36,7 @@ CREATE TABLE "Zipline" (
     "filesAssumeMimetypes" BOOLEAN NOT NULL DEFAULT false,
     "filesDefaultDateFormat" TEXT NOT NULL DEFAULT 'YYYY-MM-DD_HH:mm:ss',
     "filesRemoveGpsMetadata" BOOLEAN NOT NULL DEFAULT false,
+    "filesFileOverwrite" BOOLEAN NOT NULL DEFAULT false,
     "urlsRoute" TEXT NOT NULL DEFAULT '/go',
     "urlsLength" INTEGER NOT NULL DEFAULT 6,
     "featuresImageCompression" BOOLEAN NOT NULL DEFAULT true,

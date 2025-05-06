@@ -285,6 +285,7 @@ export const V3_COMPATIBLE_SETTINGS: Record<string, string> = {
   UPLOADER_DEFAULT_EXPIRATION: 'filesDefaultExpiration',
   UPLOADER_ASSUME_MIMETYPES: 'filesAssumeMimetypes',
   EXIF_REMOVE_GPS: 'filesRemoveGpsMetadata',
+  UPLOADER_FILE_OVERWRITE: 'filesFileOverwrite',
 
   URLS_ROUTE: 'urlsRoute',
   URLS_LENGTH: 'urlsLength',
@@ -356,6 +357,7 @@ export const V3_SETTINGS_TRANSFORM: Record<keyof typeof V3_COMPATIBLE_SETTINGS, 
     UPLOADER_ASSUME_MIMETYPES: booleanTransform,
     UPLOADER_DISABLED_EXTENSIONS: arrayTransform,
     EXIF_REMOVE_GPS: booleanTransform,
+    UPLOADER_FILE_OVERWRITE: booleanTransform,
 
     URLS_LENGTH: numberTransform,
 
